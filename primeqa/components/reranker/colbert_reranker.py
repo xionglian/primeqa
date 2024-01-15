@@ -144,6 +144,7 @@ class ColBERTReranker(BaseReranker):
         )
 
         ranking_results = []
+        self.normalize_scores(recall_info)
         for query_info, queue_docs in zip(query_infos, recall_info):
             query = query_info.get('query', '')
             date = query_info.get('query_understand',{}).get('ReportScense:time', '')
@@ -159,9 +160,6 @@ class ColBERTReranker(BaseReranker):
             metrics = []
             chunk_ids = []
             normalized_similarities = []
-            print('query:', query)
-            print('queue_docs:', queue_docs)
-            self.normalize_scores(queue_docs)
             for queue in queue_docs:
                 for chunk in queue['chunks']:
                     normalized_similarities.append(chunk.get('normalized_similarity', 0.0))
