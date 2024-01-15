@@ -222,13 +222,13 @@ class ColBERTReranker(BaseReranker):
 
             # 计算加权分数
             weighted_scores = [
-                scores[i] * weight_text +
+                (scores[i] * weight_text +
                 date_scores[i] * weight_date +
                 cate_scores[i] * weight_cate +
                 brand_scores[i] * weight_brand +
                 region_scores[i] * weight_region +
-                metric_scores[i] * weight_metric +
-                normalized_similarities[i] * weight_recall_rank
+                metric_scores[i] * weight_metric)*
+                normalized_similarities[i]
                 for i in range(len(scores))
             ]
 
