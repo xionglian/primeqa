@@ -197,6 +197,11 @@ class ColBERTReranker(BaseReranker):
                         region = region + '\n' + doc_region
                     regions.append(region)
 
+                    doc_date = chunk.get('doc_info', {}).get('date', '')
+                    if doc_date != '':
+                        date = date + '\n' + doc_date
+                    dates.append(date)
+
             scores = self._loaded_model.rescore(query, texts).tolist()
             date_scores = self._loaded_model.rescore(date, dates).tolist()
             cate_scores = self._loaded_model.rescore(cate, cates).tolist()
