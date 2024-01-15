@@ -159,6 +159,8 @@ class ColBERTReranker(BaseReranker):
             metrics = []
             chunk_ids = []
             normalized_similarities = []
+            print('query:', query)
+            print('queue_docs:', queue_docs)
             self.normalize_scores(queue_docs)
             for queue in queue_docs:
                 for chunk in queue['chunks']:
