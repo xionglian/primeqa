@@ -1,1 +1,0 @@
-from primeqa.components.reader.reader_factory import GenerativeReader

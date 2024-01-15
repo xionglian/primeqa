@@ -11,7 +11,7 @@ from primeqa.ir.dense.colbert_top.colbert.utils.utils import print_message
 class HF_ColBERT_XLMR(XLMRobertaModel):
     """
         Shallow wrapper around HuggingFace transformers. All new parameters should be defined at this level.
-        
+
         This makes sure `{from,save}_pretrained` and `init_weights` are applied to new parameters correctly.
     """
 
@@ -57,9 +57,9 @@ class HF_ColBERT_XLMR(XLMRobertaModel):
             state_dict = OrderedDict([(re.sub(r'^model.', '', key), value) for key, value in state_dict.items() if 'bert.' not in key])
             print(base)
             print(colbert_config)
-            
+
             #obj = super().from_pretrained(base, state_dict=state_dict, colbert_config=colbert_config)
-            base = '/home/wurq/xionglian/primeqa_test/models--xlm-roberta-base'
+            base = colbert_config.xlm_roberta_path
             obj = super().from_pretrained(base, state_dict=state_dict, colbert_config=colbert_config)
             print(" super().from_pretrained")
             return obj
@@ -82,8 +82,7 @@ class HF_ColBERT_XLMR(XLMRobertaModel):
     def raw_tokenizer_from_pretrained(name_or_path):
         if name_or_path.endswith('.dnn') or name_or_path.endswith('.model'):
             dnn = torch_load_dnn(name_or_path)
-            base = dnn.get('config', {}).get('_name_or_path', 'xlm-roberta-base')
-            base = '/home/wurq/xionglian/primeqa_test/models--xlm-roberta-base'
+            base = dnn.get('config', {}).get('_name_or_path', '/home/wurq/xionglian/model/models--xlm-roberta-base')
             obj = AutoTokenizer.from_pretrained(base)
 
             return obj

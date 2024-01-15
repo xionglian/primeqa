@@ -31,7 +31,7 @@ class BaseColBERT(torch.nn.Module):
 
         self.model = get_colbert_from_pretrained(name, colbert_config=self.colbert_config)
         self.config = self.model.config
-        self.model.config._name_or_path = '/home/wurq/xionglian/primeqa_test/models--xlm-roberta-base'
+        self.model.config._name_or_path = colbert_config.xlm_roberta_path
         self.raw_tokenizer = AutoTokenizer.from_pretrained(self.model.config._name_or_path)
         # self.raw_tokenizer = None
         # TEMP fix
@@ -50,7 +50,7 @@ class BaseColBERT(torch.nn.Module):
     @property
     def linear(self):
         return self.model.linear
-    
+
     @property
     def score_scaler(self):
         return self.model.score_scaler
