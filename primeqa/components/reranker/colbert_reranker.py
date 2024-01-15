@@ -244,15 +244,15 @@ class ColBERTReranker(BaseReranker):
         return ranking_results
 
     def normalize_scores(self, recall_info):
-        for queue in recall_info:
-            print(queue)
-            similarities = [chunk['similarity'] for chunk in queue['chunks']]
-            max_sim = max(similarities)
-            min_sim = min(similarities)
+        for r in recall_info:
+            for queue in r:
+                similarities = [chunk['similarity'] for chunk in queue['chunks']]
+                max_sim = max(similarities)
+                min_sim = min(similarities)
 
-            # 线性映射，将最高分映射到1，最低分映射到0.6
-            for chunk in queue['chunks']:
-                normalized_score = 0.6 + 0.4 * (chunk['similarity'] - min_sim) / (max_sim - min_sim)
-                chunk['normalized_similarity'] = normalized_score
+                # 线性映射，将最高分映射到1，最低分映射到0.6
+                for chunk in queue['chunks']:
+                    normalized_score = 0.6 + 0.4 * (chunk['similarity'] - min_sim) / (max_sim - min_sim)
+                    chunk['normalized_similarity'] = normalized_score
         return
 
