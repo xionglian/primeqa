@@ -82,7 +82,7 @@ class HF_ColBERT_XLMR(XLMRobertaModel):
     def raw_tokenizer_from_pretrained(name_or_path):
         if name_or_path.endswith('.dnn') or name_or_path.endswith('.model'):
             dnn = torch_load_dnn(name_or_path)
-            base = dnn.get('config', {}).get('_name_or_path', '/home/wurq/xionglian/model/models--xlm-roberta-base')
+            base = dnn.get('config', {}).get('_name_or_path', '/home/wurq/xionglian/primeqa_model/models--xlm-roberta-base')
             obj = AutoTokenizer.from_pretrained(base)
 
             return obj
