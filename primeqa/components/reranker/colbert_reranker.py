@@ -144,8 +144,8 @@ class ColBERTReranker(BaseReranker):
         )
 
         ranking_results = []
+        self.normalize_scores(recall_info)
         for query_info, queue_docs in zip(query_infos, recall_info):
-            self.normalize_scores(queue_docs)
             query = query_info.get('query', '')
             date = query_info.get('query_understand',{}).get('ReportScense:time', '')
             cate = query_info.get('query_understand',{}).get('ReportScense:category', '')
