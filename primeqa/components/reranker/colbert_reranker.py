@@ -159,7 +159,7 @@ class ColBERTReranker(BaseReranker):
             metrics = []
             chunk_ids = []
             normalized_similarities = []
-            self.normalize_scores(recall_info)
+            self.normalize_scores(queue_docs)
             for queue in queue_docs:
                 for chunk in queue['chunks']:
                     normalized_similarities.append(chunk.get('normalized_similarity', 0.0))
