@@ -30,6 +30,8 @@ class RunSettings:
     total_visible_gpus = torch.cuda.device_count()
     gpus: int = DefaultVal(total_visible_gpus)
 
+    xlm_roberta_path = '/home/wurq/xionglian/model/models--xlm-roberta-base'
+
     @property
     def gpus_(self):
         value = self.gpus

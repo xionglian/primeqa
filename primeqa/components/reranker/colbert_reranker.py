@@ -107,8 +107,8 @@ class ColBERTReranker(BaseReranker):
         warnings.warn("The 'predict' method is deprecated. Please use `rerank'", FutureWarning)
         return self.rerank(queries, documents, *args, **kwargs)
 
-    def rerank(self, queries: List[str],
-                    documents:  List[List[Dict]],
+    def rerank(self, query_infos: List[Dict],
+                    recall_info:  List[List[Dict]],
                     *args,
                     **kwargs):
         """
@@ -144,24 +144,81 @@ class ColBERTReranker(BaseReranker):
         )
 
         ranking_results = []
-        for query, docs in zip(queries, documents):
+        for query_info, queue_docs in zip(query_infos, recall_info):
+            query = query_info['query']
+            date = query_info['date']
+            cate = query_info['cate']
+            brand = query_info['brand']
+            region = query_info['region']
+            metric = query_info['metric']
             texts = []
-            for p in docs:
-                other_property_text = ""
-                if 'other_property' in p['document']:
-                    for key in p['document']['other_property'].keys():
-                        other_property_text = other_property_text + '\n\n' + p['document']['other_property'][key]
-                if include_title and 'title' in p['document'] and p['document']['title'] is not None and len(p['document']['title'].strip()) > 0:
-                    texts.append(p['document']['title'] + '\n\n' + p['document']['text'] + '\n\n' + other_property_text)
-                else:
-                    texts.append(p['document']['text']  + '\n\n' + other_property_text)
+            dates = []
+            cates = []
+            brands = []
+            regions = []
+            metrics = []
+            chunk_ids = []
+            for queue in queue_docs:
+                for chunk in queue['chunks']:
+                    text = chunk.get('chunk_info').get('content', '')
+                    cate = chunk.get('chunk_info').get('cate', '')
+                    date = chunk.get('chunk_info').get('date', '')
+                    brand = chunk.get('chunk_info').get('brand', '')
+                    metric = chunk.get('chunk_info').get('metric', '')
+                    region = chunk.get('chunk_info').get('region', '')
+                    chunk_ids.append({'chunk_id':chunk.get('chunk_info').get('chunk_id')})
+
+                    page_content = chunk.get('page_info').get('content', '')
+                    if page_content != '':
+                        text = text + '\n' + page_content
+                    texts.append(text)
+
+                    page_metric = chunk.get('page_info').get('metric', '')
+                    if page_metric != '':
+                        metric = metric + '\n' + page_metric
+                    metrics.append(metric)
+
+                    doc_cate = chunk.get('doc_info').get('cate', '')
+                    if doc_cate != '':
+                        cate = cate + '\n' + doc_cate
+                    cates.append(cate)
+
+                    doc_brand = chunk.get('doc_info').get('brand', '')
+                    if doc_brand != '':
+                        brand = brand + '\n' + doc_brand
+                    brands.append(brand)
+
             scores = self._loaded_model.rescore(query, texts).tolist()
-            ranked_passage_indexes = np.array(scores).argsort()[::-1][:max_num_documents if max_num_documents > 0 else len(scores)].tolist()
+            date_scores = self._loaded_model.rescore(date, dates).tolist()
+            cate_scores = self._loaded_model.rescore(cate, cates).tolist()
+            brand_scores = self._loaded_model.rescore(brand, brands).tolist()
+            region_scores = self._loaded_model.rescore(region, regions).tolist()
+            metric_scores = self._loaded_model.rescore(metric, metrics).tolist()
+            # 定义不同特征的权重，后续有样本后，可以基于样本训练一个线性层
+            weight_text = 0.5
+            weight_date = 0.1
+            weight_cate = 0.1
+            weight_brand = 0.1
+            weight_region = 0.1
+            weight_metric = 0.1
+
+            # 计算加权分数
+            weighted_scores = [
+                scores[i] * weight_text +
+                date_scores[i] * weight_date +
+                cate_scores[i] * weight_cate +
+                brand_scores[i] * weight_brand +
+                region_scores[i] * weight_region +
+                metric_scores[i] * weight_metric
+                for i in range(len(scores))
+            ]
+            ranked_passage_indexes = np.array(weighted_scores).argsort()[::-1][:max_num_documents if max_num_documents > 0 else len(scores)].tolist()
+
 
             results = []
             for idx in ranked_passage_indexes:
-                docs[idx]['score'] = scores[idx]
-                results.append(docs[idx])
+                chunk_ids[idx]['score'] = weighted_scores[idx]
+                results.append(chunk_ids[idx])
             ranking_results.append(results)
 
         return ranking_results
