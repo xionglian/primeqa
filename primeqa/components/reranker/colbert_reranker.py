@@ -171,6 +171,10 @@ class ColBERTReranker(BaseReranker):
                     page_content = chunk.get('page_info').get('content', '')
                     if page_content != '':
                         text = text + '\n' + page_content
+
+                    title = chunk.get('doc_info').get('title', '')
+                    if title != '':
+                        text = text + '\n' + title
                     texts.append(text)
 
                     page_metric = chunk.get('page_info').get('metric', '')
