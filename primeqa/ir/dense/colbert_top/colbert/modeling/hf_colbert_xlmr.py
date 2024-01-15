@@ -42,6 +42,8 @@ class HF_ColBERT_XLMR(XLMRobertaModel):
 
     @classmethod
     def from_pretrained(cls, name_or_path, colbert_config):
+        print("name_or_pathname_or_path:",name_or_path)
+        print("colbert_config:",colbert_config)
         if name_or_path.endswith('.dnn') or name_or_path.endswith('.model'):
             dnn = torch_load_dnn(name_or_path)
             state_dict = dnn['model_state_dict']
@@ -53,9 +55,13 @@ class HF_ColBERT_XLMR(XLMRobertaModel):
 
             # for reading V2
             state_dict = OrderedDict([(re.sub(r'^model.', '', key), value) for key, value in state_dict.items() if 'bert.' not in key])
-
+            print(base)
+            print(colbert_config)
+            
+            #obj = super().from_pretrained(base, state_dict=state_dict, colbert_config=colbert_config)
+            base = '/home/wurq/xionglian/primeqa_test/models--xlm-roberta-base'
             obj = super().from_pretrained(base, state_dict=state_dict, colbert_config=colbert_config)
-
+            print(" super().from_pretrained")
             return obj
 
         obj = super().from_pretrained(name_or_path, colbert_config=colbert_config)  # <<<< HERE
@@ -77,7 +83,7 @@ class HF_ColBERT_XLMR(XLMRobertaModel):
         if name_or_path.endswith('.dnn') or name_or_path.endswith('.model'):
             dnn = torch_load_dnn(name_or_path)
             base = dnn.get('config', {}).get('_name_or_path', 'xlm-roberta-base')
-
+            base = '/home/wurq/xionglian/primeqa_test/models--xlm-roberta-base'
             obj = AutoTokenizer.from_pretrained(base)
 
             return obj

@@ -22,7 +22,7 @@ class BaseColBERT(torch.nn.Module):
         super().__init__()
 
         print_message(f"#>>>>> at BaseColBERT name (model name) : {name}")
-
+        #import pdb;pdb.set_trace()
         self.name = name
         self.colbert_config = ColBERTConfig.from_existing(ColBERTConfig.load_from_checkpoint(name), colbert_config)
         # self.colbert_config = colbert_config
@@ -31,7 +31,7 @@ class BaseColBERT(torch.nn.Module):
 
         self.model = get_colbert_from_pretrained(name, colbert_config=self.colbert_config)
         self.config = self.model.config
-
+        self.model.config._name_or_path = '/home/wurq/xionglian/primeqa_test/models--xlm-roberta-base'
         self.raw_tokenizer = AutoTokenizer.from_pretrained(self.model.config._name_or_path)
         # self.raw_tokenizer = None
         # TEMP fix

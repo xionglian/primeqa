@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import json
 import numpy as np
 import warnings
+import pdb
 
 from primeqa.components.base import Reranker as BaseReranker
 from primeqa.ir.dense.colbert_top.colbert.infra.config import ColBERTConfig
@@ -84,6 +85,7 @@ class ColBERTReranker(BaseReranker):
         )
 
     def load(self, *args, **kwargs):
+        print('xltest')
         self._loaded_model = Searcher(
             None,
             checkpoint=self.model,
@@ -145,11 +147,14 @@ class ColBERTReranker(BaseReranker):
         for query, docs in zip(queries, documents):
             texts = []
             for p in docs:
+                other_property_text = ""
+                if 'other_property' in p['document']:
+                    for key in p['document']['other_property'].keys():
+                        other_property_text = other_property_text + '\n\n' + p['document']['other_property'][key]
                 if include_title and 'title' in p['document'] and p['document']['title'] is not None and len(p['document']['title'].strip()) > 0:
-                    texts.append(p['document']['title'] + '\n\n' + p['document']['text'])
+                    texts.append(p['document']['title'] + '\n\n' + p['document']['text'] + '\n\n' + other_property_text)
                 else:
-                    texts.append(p['document']['text'])
-
+                    texts.append(p['document']['text']  + '\n\n' + other_property_text)
             scores = self._loaded_model.rescore(query, texts).tolist()
             ranked_passage_indexes = np.array(scores).argsort()[::-1][:max_num_documents if max_num_documents > 0 else len(scores)].tolist()
 

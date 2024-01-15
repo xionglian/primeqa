@@ -24,6 +24,7 @@ class Searcher:
 
         initial_config = ColBERTConfig.from_existing(Run().config, config)
         self.rescore_only = rescore_only
+        #import pdb;pdb.set_trace()
 
         if self.rescore_only:
             self.checkpoint = checkpoint

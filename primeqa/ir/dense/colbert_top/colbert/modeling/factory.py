@@ -38,6 +38,7 @@ def get_model_type(name, return_config=False):
         checkpoint_config = AutoConfig.from_pretrained(name)
         model_type = checkpoint_config.model_type
         config = None
+    model_type = 'xlm-roberta'
     if return_config:
         return model_type, config
     else:
@@ -61,6 +62,8 @@ def get_colbert_from_pretrained(name, colbert_config):
         else:
             colbert = HF_ColBERT.from_pretrained(name, colbert_config)
     elif model_type == 'xlm-roberta':
+        print(config)
+        print(colbert_config)
         if config:
             colbert = HF_ColBERT_XLMR(config, colbert_config)
             colbert.load_state_dict(name)
