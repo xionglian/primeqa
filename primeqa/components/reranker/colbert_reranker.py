@@ -145,12 +145,13 @@ class ColBERTReranker(BaseReranker):
 
         ranking_results = []
         for query_info, queue_docs in zip(query_infos, recall_info):
+            self.normalize_scores(recall_info)
             query = query_info.get('query', '')
-            date = query_info.get('date', '')
-            cate = query_info.get('cate', '')
-            brand = query_info.get('brand', '')
-            region = query_info.get('region', '')
-            metric = query_info.get('metric', '')
+            date = query_info.get('query_understand',{}).get('ReportScense:time', '')
+            cate = query_info.get('query_understand',{}).get('ReportScense:category', '')
+            brand = query_info.get('query_understand',{}).get('ReportScense:brand', '')
+            region = query_info.get('query_understand',{}).get('ReportScense:region', '')
+            metric = query_info.get('query_understand',{}).get('metric', '')
             texts = []
             dates = []
             cates = []
@@ -158,21 +159,23 @@ class ColBERTReranker(BaseReranker):
             regions = []
             metrics = []
             chunk_ids = []
+            normalized_similarities = []
             for queue in queue_docs:
                 for chunk in queue['chunks']:
+                    normalized_similarities.append(chunk.get('normalized_similarity', 0.0))
                     text = chunk.get('chunk_info',{}).get('content', '')
                     cate = chunk.get('chunk_info',{}).get('cate', '')
                     date = chunk.get('chunk_info',{}).get('date', '')
                     brand = chunk.get('chunk_info',{}).get('brand', '')
                     metric = chunk.get('chunk_info',{}).get('metric', '')
-                    region = chunk.get('chunk_info',{}).get('region', '')
+                    region = chunk.get('chunk_info',{}).get('chunk_region', '')
                     chunk_ids.append({'chunk_id':chunk.get('chunk_info',{}).get('chunk_id')})
 
                     page_content = chunk.get('page_info',{}).get('content', '')
                     if page_content != '':
                         text = text + '\n' + page_content
 
-                    title = chunk.get('doc_info',{}).get('title', '')
+                    title = chunk.get('doc_info',{}).get('doc_title', '')
                     if title != '':
                         text = text + '\n' + title
                     texts.append(text)
@@ -182,7 +185,7 @@ class ColBERTReranker(BaseReranker):
                         metric = metric + '\n' + page_metric
                     metrics.append(metric)
 
-                    doc_cate = chunk.get('doc_info',{}).get('cate', '')
+                    doc_cate = chunk.get('doc_info',{}).get('doc_lv2_category', '')
                     if doc_cate != '':
                         cate = cate + '\n' + doc_cate
                     cates.append(cate)
@@ -197,7 +200,7 @@ class ColBERTReranker(BaseReranker):
                         region = region + '\n' + doc_region
                     regions.append(region)
 
-                    doc_date = chunk.get('doc_info', {}).get('date', '')
+                    doc_date = chunk.get('doc_info', {}).get('doc_date', '')
                     if doc_date != '':
                         date = date + '\n' + doc_date
                     dates.append(date)
@@ -215,6 +218,7 @@ class ColBERTReranker(BaseReranker):
             weight_brand = 0.1
             weight_region = 0.1
             weight_metric = 0.1
+            weight_recall_rank = 0.1
 
             # 计算加权分数
             weighted_scores = [
@@ -223,9 +227,11 @@ class ColBERTReranker(BaseReranker):
                 cate_scores[i] * weight_cate +
                 brand_scores[i] * weight_brand +
                 region_scores[i] * weight_region +
-                metric_scores[i] * weight_metric
+                metric_scores[i] * weight_metric +
+                normalized_similarities[i] * weight_recall_rank
                 for i in range(len(scores))
             ]
+
             ranked_passage_indexes = np.array(weighted_scores).argsort()[::-1][:max_num_documents if max_num_documents > 0 else len(scores)].tolist()
 
 
@@ -236,3 +242,16 @@ class ColBERTReranker(BaseReranker):
             ranking_results.append(results)
 
         return ranking_results
+
+    def normalize_scores(self, recall_info):
+        for queue in recall_info:
+            similarities = [chunk['similarity'] for chunk in queue['chunks']]
+            max_sim = max(similarities)
+            min_sim = min(similarities)
+
+            # 线性映射，将最高分映射到1，最低分映射到0.6
+            for chunk in queue['chunks']:
+                normalized_score = 0.6 + 0.4 * (chunk['similarity'] - min_sim) / (max_sim - min_sim)
+                chunk['normalized_similarity'] = normalized_score
+        return
+
