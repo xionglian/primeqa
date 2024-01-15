@@ -245,6 +245,7 @@ class ColBERTReranker(BaseReranker):
 
     def normalize_scores(self, recall_info):
         for queue in recall_info:
+            print(queue)
             similarities = [chunk['similarity'] for chunk in queue['chunks']]
             max_sim = max(similarities)
             min_sim = min(similarities)
