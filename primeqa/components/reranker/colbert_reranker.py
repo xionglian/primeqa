@@ -188,6 +188,11 @@ class ColBERTReranker(BaseReranker):
                         brand = brand + '\n' + doc_brand
                     brands.append(brand)
 
+                    doc_region = chunk.get('doc_info').get('region', '')
+                    if doc_region != '':
+                        region = region + '\n' + doc_region
+                    regions.append(region)
+
             scores = self._loaded_model.rescore(query, texts).tolist()
             date_scores = self._loaded_model.rescore(date, dates).tolist()
             cate_scores = self._loaded_model.rescore(cate, cates).tolist()
