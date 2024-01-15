@@ -145,12 +145,12 @@ class ColBERTReranker(BaseReranker):
 
         ranking_results = []
         for query_info, queue_docs in zip(query_infos, recall_info):
-            query = query_info['query']
-            date = query_info['date']
-            cate = query_info['cate']
-            brand = query_info['brand']
-            region = query_info['region']
-            metric = query_info['metric']
+            query = query_info.get('query', '')
+            date = query_info.get('date', '')
+            cate = query_info.get('cate', '')
+            brand = query_info.get('brand', '')
+            region = query_info.get('region', '')
+            metric = query_info.get('metric', '')
             texts = []
             dates = []
             cates = []
@@ -160,39 +160,39 @@ class ColBERTReranker(BaseReranker):
             chunk_ids = []
             for queue in queue_docs:
                 for chunk in queue['chunks']:
-                    text = chunk.get('chunk_info').get('content', '')
-                    cate = chunk.get('chunk_info').get('cate', '')
-                    date = chunk.get('chunk_info').get('date', '')
-                    brand = chunk.get('chunk_info').get('brand', '')
-                    metric = chunk.get('chunk_info').get('metric', '')
-                    region = chunk.get('chunk_info').get('region', '')
-                    chunk_ids.append({'chunk_id':chunk.get('chunk_info').get('chunk_id')})
+                    text = chunk.get('chunk_info',{}).get('content', '')
+                    cate = chunk.get('chunk_info',{}).get('cate', '')
+                    date = chunk.get('chunk_info',{}).get('date', '')
+                    brand = chunk.get('chunk_info',{}).get('brand', '')
+                    metric = chunk.get('chunk_info',{}).get('metric', '')
+                    region = chunk.get('chunk_info',{}).get('region', '')
+                    chunk_ids.append({'chunk_id':chunk.get('chunk_info',{}).get('chunk_id')})
 
-                    page_content = chunk.get('page_info').get('content', '')
+                    page_content = chunk.get('page_info',{}).get('content', '')
                     if page_content != '':
                         text = text + '\n' + page_content
 
-                    title = chunk.get('doc_info').get('title', '')
+                    title = chunk.get('doc_info',{}).get('title', '')
                     if title != '':
                         text = text + '\n' + title
                     texts.append(text)
 
-                    page_metric = chunk.get('page_info').get('metric', '')
+                    page_metric = chunk.get('page_info',{}).get('metric', '')
                     if page_metric != '':
                         metric = metric + '\n' + page_metric
                     metrics.append(metric)
 
-                    doc_cate = chunk.get('doc_info').get('cate', '')
+                    doc_cate = chunk.get('doc_info',{}).get('cate', '')
                     if doc_cate != '':
                         cate = cate + '\n' + doc_cate
                     cates.append(cate)
 
-                    doc_brand = chunk.get('doc_info').get('brand', '')
+                    doc_brand = chunk.get('doc_info',{}).get('brand', '')
                     if doc_brand != '':
                         brand = brand + '\n' + doc_brand
                     brands.append(brand)
 
-                    doc_region = chunk.get('doc_info').get('region', '')
+                    doc_region = chunk.get('doc_info',{}).get('region', '')
                     if doc_region != '':
                         region = region + '\n' + doc_region
                     regions.append(region)
