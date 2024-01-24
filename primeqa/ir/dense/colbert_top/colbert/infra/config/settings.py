@@ -102,15 +102,16 @@ class ResourceSettings:
 @dataclass
 class DocSettings:
     dim: int = DefaultVal(128)
-    doc_maxlen: int = DefaultVal(180)
+    doc_maxlen: int = DefaultVal(216)
     mask_punctuation: bool = DefaultVal(True)
 
 
 @dataclass
 class QuerySettings:
-    query_maxlen: int = DefaultVal(32)
+    query_maxlen: int = DefaultVal(64)
     attend_to_mask_tokens : bool = DefaultVal(False)
     interaction: str = DefaultVal('colbert')
+    feature_num: int = DefaultVal(5)
 
 
 @dataclass
@@ -142,6 +143,8 @@ class TrainingSettings:
     use_ib_negatives: bool = DefaultVal(False)
 
     reranker: bool = DefaultVal(False)
+
+    structure_feature_reranker: bool = DefaultVal(True)
 
     distillation_alpha: float = DefaultVal(1.0)
 

@@ -18,6 +18,7 @@ from primeqa.ir.dense.colbert_top.colbert.infra.run import Run
 
 from transformers import AdamW, get_linear_schedule_with_warmup
 from primeqa.ir.dense.colbert_top.colbert.infra import ColBERTConfig
+from primeqa.ir.dense.colbert_top.colbert.modeling.structure_feature_colbert import StructureFeatureColBERT
 from primeqa.ir.dense.colbert_top.colbert.training.rerank_batcher import RerankBatcher
 from primeqa.ir.dense.colbert_top.colbert.training.eager_batcher_v2 import EagerBatcher  # support text input
 
@@ -88,10 +89,11 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
     config.bsize = config.bsize // config.nranks
 
     print_message(f"Using config.bsize = {config.bsize} (per process) and config.accumsteps = {config.accumsteps}")
-
-    if not config.reranker:
+    if config.structure_feature_reranker:
+        colbert = StructureFeatureColBERT(name=config.checkpoint, colbert_config=config)
+        print()
+    elif not config.reranker:
         colbert = ColBERT(name=config.checkpoint, colbert_config=config)
-
         if config.teacher_checkpoint is not None:
             teacher_colbert = ColBERT(name=config.teacher_checkpoint, colbert_config=config)
     else:
@@ -155,7 +157,7 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
         print_message(f"#> LR will use {config.warmup} warmup steps and linear decay over {maxsteps} steps.")
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=config.warmup,
                                                     num_training_steps=maxsteps)
-    
+
     warmup_bert = config.warmup_bert
     if warmup_bert is not None:
         set_bert_grad(colbert, False)
@@ -233,7 +235,7 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
                                 teacher_scores, teacher_output_q, teacher_output_p  = teacher_colbert(*teacher_encoding)
 
                             teacher_queries_toks_masks = (
-                                                    teacher_queries_passages[0][0].repeat_interleave(config.nway, dim=0).contiguous(), 
+                                                    teacher_queries_passages[0][0].repeat_interleave(config.nway, dim=0).contiguous(),
                                                     teacher_queries_passages[0][1].repeat_interleave(config.nway, dim=0).contiguous()
                                                     )
                             teacher_queries = copy.deepcopy(teacher_queries_toks_masks)
