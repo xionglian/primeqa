@@ -80,7 +80,7 @@ class StructureFeatureColBERT(StructureFeatureBaseColBERT):
             q_duplicated = q.repeat_interleave(self.colbert_config.nway, dim=0).contiguous()
             scores = self.score(q_duplicated, d, d_mask)
             all_scores.append(scores)
-        all_scores = torch.tensor(all_scores).T
+        all_scores = torch.stack(all_scores).T
         all_scores = self.feature_fusion_linear(all_scores)
 
         return all_scores
