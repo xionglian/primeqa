@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, XLMRobertaModel
 from primeqa.ir.dense.colbert_top.colbert.utils.utils import torch_load_dnn
 from primeqa.ir.dense.colbert_top.colbert.utils.utils import print_message
 
-class HF_ColBERT_XLMR(XLMRobertaModel):
+class StructureFeaturesHF_ColBERT_XLMR(XLMRobertaModel):
     """
         Shallow wrapper around HuggingFace transformers. All new parameters should be defined at this level.
 

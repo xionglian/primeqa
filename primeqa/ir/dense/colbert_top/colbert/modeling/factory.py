@@ -3,6 +3,8 @@ from transformers import AutoConfig, PretrainedConfig
 # bert imports
 # from colbert.modeling.colbert import ColBERT
 from primeqa.ir.dense.colbert_top.colbert.modeling.hf_colbert import HF_ColBERT
+from primeqa.ir.dense.colbert_top.colbert.modeling.structure_feature_hf_colbert_xlmr import \
+    StructureFeaturesHF_ColBERT_XLMR
 from primeqa.ir.dense.colbert_top.colbert.modeling.tokenization import QueryTokenizer, DocTokenizer
 from primeqa.ir.dense.colbert_top.colbert.utils.utils import print_message
 
@@ -61,11 +63,19 @@ def get_colbert_from_pretrained(name, colbert_config):
         else:
             colbert = HF_ColBERT.from_pretrained(name, colbert_config)
     elif model_type == 'xlm-roberta':
-        if config:
-            colbert = HF_ColBERT_XLMR(config, colbert_config)
-            colbert.load_state_dict(name)
+        if colbert_config.structure_feature_reranker:
+
+            if config:
+                colbert = StructureFeaturesHF_ColBERT_XLMR(config, colbert_config)
+                colbert.load_state_dict(name)
+            else:
+                colbert = StructureFeaturesHF_ColBERT_XLMR.from_pretrained(name, colbert_config)
         else:
-            colbert = HF_ColBERT_XLMR.from_pretrained(name, colbert_config)
+            if config:
+                colbert = HF_ColBERT_XLMR(config, colbert_config)
+                colbert.load_state_dict(name)
+            else:
+                colbert = HF_ColBERT_XLMR.from_pretrained(name, colbert_config)
     elif model_type == 'roberta':
         if config:
             colbert = HF_ColBERT_Roberta(config, colbert_config)
