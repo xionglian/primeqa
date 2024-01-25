@@ -111,7 +111,7 @@ class QuerySettings:
     query_maxlen: int = DefaultVal(64)
     attend_to_mask_tokens : bool = DefaultVal(False)
     interaction: str = DefaultVal('colbert')
-    feature_num: int = DefaultVal(5)
+    feature_names: list = DefaultVal(['search_text', 'region', 'brand', 'category', 'title', 'industry', 'date', 'indicator', 'others'])
 
 
 @dataclass

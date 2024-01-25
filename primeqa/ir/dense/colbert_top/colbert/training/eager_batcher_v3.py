@@ -3,18 +3,14 @@ import csv
 import random
 import os
 import ujson
+import pandas as pd
 
 from functools import partial
 from primeqa.ir.dense.colbert_top.colbert.infra.config.config import ColBERTConfig
 from primeqa.ir.dense.colbert_top.colbert.modeling.tokenization.utils import tensorize_structrue_feature_triples
-from primeqa.ir.dense.colbert_top.colbert.utils.utils import print_message, zipstar, remove_first_and_last_quote
-from primeqa.ir.dense.colbert_top.colbert.modeling.tokenization import tensorize_triples
+from primeqa.ir.dense.colbert_top.colbert.utils.utils import print_message
 from primeqa.ir.dense.colbert_top.colbert.modeling.factory import get_query_tokenizer, get_doc_tokenizer
-from primeqa.ir.dense.colbert_top.colbert.evaluation.loaders import load_collection
 
-from primeqa.ir.dense.colbert_top.colbert.data.collection import Collection
-from primeqa.ir.dense.colbert_top.colbert.data.queries import Queries
-from primeqa.ir.dense.colbert_top.colbert.data.examples import Examples
 
 
 
@@ -23,6 +19,7 @@ class EagerStructureFeatureBatcher():
         self.bsize, self.accumsteps = config.bsize, config.accumsteps
         self.rank, self.nranks = rank, nranks
         self.nway = config.nway
+        self.config = config
 
         # self.query_tokenizer = QueryTokenizer(config)
         # self.doc_tokenizer = DocTokenizer(config)
@@ -55,9 +52,8 @@ class EagerStructureFeatureBatcher():
         triples = []
 
         with open(path) as f:
-            csv_reader = csv.DictReader(f, fieldnames=["query", "positive", "negative", 'query_features',
-                                                       "positive_features", "negative_features" ], delimiter="\t")
-            for line_idx, row in enumerate(csv_reader):
+            data = pd.read_csv(f)
+            for line_idx, row in data.iterrows():
                 if line_idx % nranks == rank:
                     query = row["query"]
                     pos = row["positive"]
@@ -94,7 +90,7 @@ class EagerStructureFeatureBatcher():
             passages.extend(pas)
             scores.extend(sco)
             queries_features.append(query_features)
-            docs_features.append(doc_features)
+            docs_features.extend(doc_features)
 
         self.position += line_idx + 1
 
@@ -104,7 +100,8 @@ class EagerStructureFeatureBatcher():
         assert len(queries) == self.bsize
         assert len(passages) == self.nway * self.bsize
 
-        return self.tensorize_triples(queries, passages, queries_features, docs_features, scores, self.bsize // self.accumsteps, self.nway)
+        return self.tensorize_triples(queries, passages, queries_features, docs_features, scores,
+                                      self.bsize // self.accumsteps, self.nway, self.config.feature_names)
 
     # adding for training loop logic
     def skip_to_batch(self, batch_idx, intended_batch_size):
