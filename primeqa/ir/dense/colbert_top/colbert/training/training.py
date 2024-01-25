@@ -129,15 +129,14 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
                 student_teacher_loss_fct = torch.nn.L1Loss()
         else:
             student_teacher_loss_fct = torch.nn.KLDivLoss(reduction="batchmean")
-
-    if DEVICE == torch.device("cuda"):
-        colbert = torch.nn.parallel.DistributedDataParallel(colbert, device_ids=[config.rank],
-                                                        output_device=config.rank,
-                                                        find_unused_parameters=True)
-        if config.teacher_checkpoint is not None:
-            teacher_colbert = torch.nn.parallel.DistributedDataParallel(teacher_colbert, device_ids=[config.rank],
-                                                output_device=config.rank,
-                                                find_unused_parameters=True)
+    # if DEVICE == torch.device("cuda"):
+    #     colbert = torch.nn.parallel.DistributedDataParallel(colbert, device_ids=[config.rank],
+    #                                                     output_device=config.rank,
+    #                                                     find_unused_parameters=True)
+    #     if config.teacher_checkpoint is not None:
+    #         teacher_colbert = torch.nn.parallel.DistributedDataParallel(teacher_colbert, device_ids=[config.rank],
+    #                                             output_device=config.rank,
+    #                                             find_unused_parameters=True)
 
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, colbert.parameters()), lr=config.lr, eps=1e-8)
