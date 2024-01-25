@@ -71,7 +71,7 @@ def tensorize_structrue_feature_triples(query_tokenizer, doc_tokenizer, queries,
             query_features_batches.append(query_feature_batches)
             doc_features_batches.append(doc_feature_batches)
     query_features_batches = split_list(query_features_batches, len(feature_names))
-    doc_features_batches = split_list(passages_struct_features, len(feature_names))
+    doc_features_batches = split_list(doc_features_batches, len(feature_names))
     if len(scores):
         score_batches = _split_into_batches2(scores, bsize * nway)
     else:
