@@ -366,32 +366,32 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
 
                     loss = loss / config.accumsteps
 
-                if config.rank < 1:
-                    print_progress(scores)
+                    if config.rank < 1:
+                        print_progress(scores)
 
-                amp.backward(loss)
+                    amp.backward(loss)
 
-                this_batch_loss += loss.item()
+                    this_batch_loss += loss.item()
 
-                train_loss = this_batch_loss if train_loss is None else train_loss
-                train_loss = train_loss_mu * train_loss + (1 - train_loss_mu) * this_batch_loss
+                    train_loss = this_batch_loss if train_loss is None else train_loss
+                    train_loss = train_loss_mu * train_loss + (1 - train_loss_mu) * this_batch_loss
 
-                amp.step(colbert, optimizer, scheduler)
+                    amp.step(colbert, optimizer, scheduler)
 
-                if config.rank < 1:
-                    print_message(batch_idx, train_loss)
+                    if config.rank < 1:
+                        print_message(batch_idx, train_loss)
 
-                    num_per_epoch = len(reader)
-                    epoch_idx = ((batch_idx + 1) * config.bsize * config.nranks) // num_per_epoch - 1
-                    try:
-                        exit_queue.get_nowait()
-                        # save_checkpoint(name, epoch_idx, batch_idx, colbert, optimizer, amp, train_loss, arguments)
-                        save_checkpoint(name, epoch_idx, batch_idx, colbert, optimizer, amp, train_loss)
-                        # save_checkpoint(name, epoch_idx, batch_idx, colbert, optimizer, amp, train_loss, config.model_type, arguments)
-                        sys.exit(0)
-                    except Empty:
-                        # manage_checkpoints(config, colbert, optimizer, amp, batch_idx + 1, num_per_epoch, epoch_idx, train_loss)
-                        manage_checkpoints_with_path_save(config, colbert, optimizer, amp, batch_idx + 1, num_per_epoch, epoch_idx, train_loss)
+                        num_per_epoch = len(reader)
+                        epoch_idx = ((batch_idx + 1) * config.bsize * config.nranks) // num_per_epoch - 1
+                        try:
+                            exit_queue.get_nowait()
+                            # save_checkpoint(name, epoch_idx, batch_idx, colbert, optimizer, amp, train_loss, arguments)
+                            save_checkpoint(name, epoch_idx, batch_idx, colbert, optimizer, amp, train_loss)
+                            # save_checkpoint(name, epoch_idx, batch_idx, colbert, optimizer, amp, train_loss, config.model_type, arguments)
+                            sys.exit(0)
+                        except Empty:
+                            # manage_checkpoints(config, colbert, optimizer, amp, batch_idx + 1, num_per_epoch, epoch_idx, train_loss)
+                            manage_checkpoints_with_path_save(config, colbert, optimizer, amp, batch_idx + 1, num_per_epoch, epoch_idx, train_loss)
 
     # save last model
     name = os.path.join(path, "colbert-LAST.dnn")
