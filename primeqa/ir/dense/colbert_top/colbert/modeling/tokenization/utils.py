@@ -1,5 +1,5 @@
 import torch
-
+import numpy as np
 
 def tensorize_triples(query_tokenizer, doc_tokenizer, queries, passages, scores, bsize, nway):
     # assert len(passages) == len(scores) == bsize * nway
@@ -36,6 +36,14 @@ def tensorize_triples(query_tokenizer, doc_tokenizer, queries, passages, scores,
 
     return batches
 
+def split_list(ori_list, length):
+    # Convert the original list to a numpy array
+    array = np.array(ori_list)
+    # Reshape the array to the desired shape
+    reshaped_array = np.reshape(array, (-1, length)).T
+    # Convert back to a list of lists
+    split_lists = reshaped_array.tolist()
+    return split_lists
 
 def tensorize_structrue_feature_triples(query_tokenizer, doc_tokenizer, queries, passages, queries_struct_features, passages_struct_features, scores, bsize, nway,
                                         feature_names):
@@ -62,7 +70,8 @@ def tensorize_structrue_feature_triples(query_tokenizer, doc_tokenizer, queries,
             doc_feature_batches = _split_into_batches(D_feature_ids, D_feature_mask, bsize * nway)
             query_features_batches.append(query_feature_batches)
             doc_features_batches.append(doc_feature_batches)
-
+    query_features_batches = split_list(query_features_batches, len(feature_names))
+    doc_features_batches = split_list(passages_struct_features, len(feature_names))
     if len(scores):
         score_batches = _split_into_batches2(scores, bsize * nway)
     else:
