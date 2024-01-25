@@ -32,7 +32,7 @@ class StructureFeaturesHF_ColBERT_XLMR(XLMRobertaModel):
         self.linear = nn.Linear(config.hidden_size, colbert_config.dim, bias=False)
         # if colbert_config.relu:
         #     self.score_scaler = nn.Linear(1, 1)
-        self.feature_fusion_linear = nn.Linear(len(config.feature_names) + 1, 1)
+        self.feature_fusion_linear = nn.Linear(len(colbert_config.feature_names) + 1, 1)
 
         self.init_weights()
 
