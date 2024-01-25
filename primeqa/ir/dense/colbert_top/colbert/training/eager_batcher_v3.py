@@ -84,12 +84,12 @@ class EagerStructureFeatureBatcher():
             query, pos, neg, query_features, positive_features, negative_features = self.triples[real_line_idx]
             pas = [ pos, neg ]
             sco = []
-            doc_features = [positive_features, negative_features]
+            doc_features = [eval(positive_features), eval(negative_features)]
 
             queries.append(query)
             passages.extend(pas)
             scores.extend(sco)
-            queries_features.append(query_features)
+            queries_features.append(eval(query_features))
             docs_features.extend(doc_features)
 
         self.position += line_idx + 1
