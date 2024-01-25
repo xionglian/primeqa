@@ -71,6 +71,12 @@ class EagerBatcher():
         return self.length
 
     def __next__(self):
+        offset, endpos = self.position, min(self.position + self.bsize, len(self.triples))
+        self.position = endpos
+
+        if offset + self.bsize > len(self.triples):
+            raise StopIteration
+
         queries, positives, negatives = [], [], []
         passages = []
         scores = []

@@ -16,6 +16,8 @@ from primeqa.ir.dense.colbert_top.colbert.modeling.factory import get_query_toke
 
 class EagerStructureFeatureBatcher():
     def __init__(self, config: ColBERTConfig, triples, rank=0, nranks=1, is_teacher=False):
+
+
         self.bsize, self.accumsteps = config.bsize, config.accumsteps
         self.rank, self.nranks = rank, nranks
         self.nway = config.nway
@@ -72,11 +74,20 @@ class EagerStructureFeatureBatcher():
         return self.length
 
     def __next__(self):
+        ###
+        offset, endpos = self.position, min(self.position + self.bsize, len(self.triples))
+        self.position = endpos
+
+        if offset + self.bsize > len(self.triples):
+            raise StopIteration
+
+        ###
+
         queries, positives, negatives, queries_features, docs_features = [], [], [], [], []
         passages = []
         scores = []
 
-        for line_idx in range(self.bsize * self.nranks):
+        for line_idx in range(offset, endpos):
             if (self.position + line_idx) % self.nranks != self.rank:
                 continue
 
