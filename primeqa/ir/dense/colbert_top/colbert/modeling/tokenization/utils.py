@@ -42,7 +42,7 @@ def split_list(ori_list, length):
     array = np.array(ori_list)
     reshaped_array = np.reshape(array, (s[1], s[0], s[2]))
     reshaped_array = reshaped_array.tolist()
-    converted_list = [[[tuple(outer)] for outer in sub_list] for sub_list in reshaped_array]
+    converted_list = [[tuple(outer) for outer in sub_list] for sub_list in reshaped_array]
     return converted_list
 
 def tensorize_structrue_feature_triples(query_tokenizer, doc_tokenizer, queries, passages, queries_struct_features, passages_struct_features, scores, bsize, nway,
