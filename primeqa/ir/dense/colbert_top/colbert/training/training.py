@@ -348,6 +348,8 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
 
                     scores = scores.view(-1, config.nway)
 
+                    print('xltest:len(batch):',len(batch), ' len(BatchSteps):', len(BatchSteps))
+
                     if len(target_scores) and not config.ignore_scores:
                         target_scores = torch.tensor(target_scores).view(-1, config.nway).to(DEVICE)
                         target_scores = target_scores * config.distillation_alpha
