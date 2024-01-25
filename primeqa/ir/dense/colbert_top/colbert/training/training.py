@@ -331,8 +331,12 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
             for batch in BatchSteps:
                 with amp.context():
                     try:
-                        queries, passages, target_scores = batch
-                        encoding = [queries, passages]
+                        if config.structure_feature_reranker:
+                            queries, passages, target_scores, query_features, doc_features = batch
+                            encoding = [queries, passages, query_features, doc_features]
+                        else:
+                            queries, passages, target_scores = batch
+                            encoding = [queries, passages]
                     except:
                         encoding, target_scores = batch
                         encoding = [encoding.to(DEVICE)]
