@@ -19,6 +19,7 @@ from primeqa.ir.dense.colbert_top.colbert.infra.run import Run
 from transformers import AdamW, get_linear_schedule_with_warmup
 from primeqa.ir.dense.colbert_top.colbert.infra import ColBERTConfig
 from primeqa.ir.dense.colbert_top.colbert.modeling.structure_feature_colbert import StructureFeatureColBERT
+from primeqa.ir.dense.colbert_top.colbert.training.eager_batcher_v3 import EagerStructureFeatureBatcher
 from primeqa.ir.dense.colbert_top.colbert.training.rerank_batcher import RerankBatcher
 from primeqa.ir.dense.colbert_top.colbert.training.eager_batcher_v2 import EagerBatcher  # support text input
 
@@ -100,7 +101,9 @@ def train(config: ColBERTConfig, triples, queries=None, collection=None):
         colbert = ElectraReranker.from_pretrained(config.checkpoint)
 
     # the reader , the proper tokenizer is based on model type
-    if collection is not None:
+    if config.structure_feature_reranker:
+        reader = EagerStructureFeatureBatcher(config, triples, (0 if config.rank == -1 else config.rank), config.nranks)
+    elif collection is not None:
         if config.reranker:
             reader = RerankBatcher(config, triples, queries, collection, (0 if config.rank == -1 else config.rank), config.nranks)
         else:
