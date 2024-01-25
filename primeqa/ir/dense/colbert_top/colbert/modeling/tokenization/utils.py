@@ -38,12 +38,12 @@ def tensorize_triples(query_tokenizer, doc_tokenizer, queries, passages, scores,
 
 def split_list(ori_list, length):
     # Convert the original list to a numpy array
+    s = np.array(ori_list).shape
     array = np.array(ori_list)
-    # Reshape the array to the desired shape
-    reshaped_array = np.reshape(array, (-1, length)).T
-    # Convert back to a list of lists
-    split_lists = reshaped_array.tolist()
-    return split_lists
+    reshaped_array = np.reshape(array, (s[1], s[0], s[2]))
+    reshaped_array = reshaped_array.tolist()
+    converted_list = [[[tuple(outer)] for outer in sub_list] for sub_list in reshaped_array]
+    return converted_list
 
 def tensorize_structrue_feature_triples(query_tokenizer, doc_tokenizer, queries, passages, queries_struct_features, passages_struct_features, scores, bsize, nway,
                                         feature_names):
